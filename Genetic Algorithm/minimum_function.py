@@ -3,15 +3,27 @@ import GA
 import matplotlib.pyplot as plt
 
 
-class Genetics(object):
 
-    def __init__(self, f, left, right,
-                 pop_weight=10, chromosome_length=8, num_generations=100):
-        self.f = f  # function to find the minimum of it
-        self.left = left  # left border of function
-        self.right = right  # right border of function
+
+class Genetics(object):
+    """
+
+    """
+    def __init__(self, f, left, right, pop_weight=10, chromosome_length=8, num_generations=100):
+        """
+
+        :param f: function fo find minimum of it
+        :param left: left border of the function
+        :param right: right border of the function
+        :param pop_weight: weighht of population
+        :param chromosome_length: length of the chromosome
+        :param num_generations: number of generations
+        """
+        self.f = f
+        self.left = left
+        self.right = right
         self.pop_size = (pop_weight, chromosome_length)
-        self.population = self.init_population()  # first population
+        self.population = self.init_population()
         self.fitness = GA.fitness(self.f, self.population)
         self.generation = 0
         self.num_generations = num_generations
@@ -20,10 +32,17 @@ class Genetics(object):
         self.minimum_function = np.min(self.fitness)
 
     def init_population(self):
+        """
+        initializes first population
+        :return: 2-dim array of population
+        """
         return np.random.uniform(self.left, self.right,
                                  size=(self.pop_size[0], self.pop_size[1]))
 
     def next_generation(self):
+        """
+
+        """
         self.fitness = GA.fitness(self.f, self.population)
         parents = GA.select_parents(self.population,
                                     self.fitness)
@@ -31,6 +50,7 @@ class Genetics(object):
         if min_fitness < self.minimum_function:
             self.minimum_function = min_fitness
         self.fitness_history.append(min_fitness)
+        plt.scatter(self.left, np.min(self.fitness), marker='o', c='red')
         offspring_crossover = GA.crossover(parents,
                                            offspring_size=((self.pop_size[0] -
                                                             parents.shape[0],
@@ -41,7 +61,8 @@ class Genetics(object):
                                              self.left,
                                              self.right)
 
-        # creating a new population
+        # creating new population
+
         self.population[0:parents.shape[0], :] = parents
         self.population[parents.shape[0]:, :] = offspring_mutation
 
@@ -52,46 +73,41 @@ class Genetics(object):
         print("population:\n{0}".format(self.population))
         print("minimum fitness: {0}".format(np.min(self.fitness)))
 
+        # print("best solution: {0}".format(self.population[min_fitness_idx, :]))
+        # print("best solition fitness: {0}".format(
+        #     self.fitness[min_fitness_idx]))
+
     def plot(self):
         x = np.arange(self.left, self.right, 0.01)
         y = self.f(x)
-        fig, axs = plt.subplots(2,
-                                1,
-                                figsize=(10, 8),
-                                constrained_layout=True)
-        fig.suptitle('Plot:', fontsize=16)
-        axs[0].plot(x, y)
-        axs[0].set_title('function')
-        axs[0].set_xlabel('x')
-        axs[0].set_ylabel('y')
+        plt.plot(x, y)
+        # plt.plot(self.f(np.min(self.fitness)), 'o')
 
-        axs[1].plot(np.arange(self.num_generations + 1), self.fitness_history)
-        axs[1].plot(np.arange(self.num_generations + 1),
-                    np.ones(self.num_generations + 1) * self.minimum_function,
-                    'r-')
-        axs[1].annotate('minimum function: {}'.format(self.minimum_function),
-                        xy=(self.num_generations + 1, self.minimum_function),
-                        xytext=(self.num_generations / 3,
-                                self.minimum_function + 1),
-                        arrowprops=dict(arrowstyle="->"))
-        axs[1].set_title('fitness history')
-        axs[1].set_xlabel('generation')
-        axs[1].set_ylabel('fitness')
-
-        # for fullscreen plot
-        mng = plt.get_current_fig_manager()
-        mng.window.state('zoomed')
-        plt.show()
+    def histogram_fitness(self):
+        plt.plot(np.arange(self.num_generations + 1), self.fitness_history)
+        plt.plot(np.arange(self.num_generations + 1),
+                 np.ones(self.num_generations + 1) * self.minimum_function, 'r-')
+        plt.annotate('minimum function: {}'.format(self.minimum_function),
+                     xy=(self.num_generations + 1, self.minimum_function), xytext=(self.num_generations / 3, self.minimum_function + 1),
+                     arrowprops=dict(arrowstyle="->"))
 
     def loop(self):
         for i in range(self.num_generations):
+            # self.show()
+
             self.next_generation()
 
 
 def main():
-    ga = Genetics(lambda x: np.exp(-x) * np.cos(2 * np.pi * x), -4, 4)
-    ga.loop()
-    ga.plot()
+    ga = Genetics(lambda x: np.exp(-x) * np.cos(2 * np.pi * x),
+                  -4, 4)
+
+    print(ga.init_population())
+    # ga.loop()
+    # ga.plot()
+    # plt.show()
+    # ga.histogram_fitness()
+    # plt.show()
 
 
 if __name__ == "__main__":
