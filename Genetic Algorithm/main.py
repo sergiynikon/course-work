@@ -1,25 +1,15 @@
-from scitools.StringFunction import StringFunction
-
+import function_manipulation
 from Population import Population
-
-
-def create_f(f):
-    """
-    creates function from string expression
-    :param f: str
-    :return: function
-    """
-    return StringFunction(f, independent_variables=('x'))
-
 
 if __name__ == '__main__':
     pop_size = 100
     mutate_prob = 0.01
     retain = 0.1
     random_retain = 0.03
-    a = -10
-    b = 10
-    f = create_f("x**4 - 3*x**3+x-1")
+    a = -2
+    b = 1
+    f = function_manipulation.create_f("sin(10*pi*x) + x")
+    function_manipulation.plot_f(f, a, b)
     pop = Population(f,
                      minvalue=a,
                      maxvalue=b,
@@ -28,10 +18,8 @@ if __name__ == '__main__':
                      retain=retain,
                      random_retain=random_retain)
 
-    GENERATIONS = 100
-    for x in range(GENERATIONS):
-        pop.evolve()
-        print(pop.fitness_history[-1])
-    print("Generation:", x, "Population fitness:", pop.fitness_history[-1])
-
-# TODO fix bugs where is infinite loop of calculating
+    GENERATIONS = 50
+    for generation in range(GENERATIONS + 1):
+        pop.evolve(generation)
+    print("Generation:", generation, "minimum:", pop.minimum_function)
+    pop.plot(GENERATIONS)

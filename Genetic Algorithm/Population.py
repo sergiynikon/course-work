@@ -1,5 +1,6 @@
 import random
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 from Individual import Individual
@@ -24,6 +25,7 @@ class Population(object):
         self.random_retain = random_retain
         self.fitness_history = []
         self.parents = []
+        self.minimum_function = float("inf")
 
         #create individuals
         self.individuals = []
@@ -40,8 +42,15 @@ class Population(object):
         """
         # Sort individuals by fitness
         # (we use reversed because in this case lower fintess is better)
-        self.individuals = list(reversed(sorted(self.individuals, key=lambda x: x.fitness(self.f), reverse=True)))
-        self.fitness_history.append(self.individuals[0].fitness(self.f))
+        self.individuals = list(reversed(sorted(self.individuals,
+                                                key=lambda x: x.fitness(self.f),
+                                                reverse=True)))
+
+        # we have first element of individuals is the fittest, so we can set
+        # minimum_function as individuals[0].fitness if it less than actual minimum_function
+        if self.individuals[0].fitness(self.f) < self.minimum_function:
+            self.minimum_function = self.individuals[0].fitness(self.f)
+
         # Keep the fittest as parents for next generation
         retain_length = int(self.retain * len(self.individuals))
         self.parents = self.individuals[:retain_length]
@@ -52,26 +61,33 @@ class Population(object):
             if self.random_retain > np.random.rand():
                 self.parents.append(unfit)
 
-    # def grade(self, generation=None):
-    #     """
-    #     Grade the generation by getting the average fitness of its individuals
-    #     """
-    #     fitness_sum = 0
-    #     for x in self.individuals:
-    #         fitness_sum += x.fitness(self.f)
-    #
-    #     pop_fitness = fitness_sum / self.pop_size
-    #     self.fitness_history.append(pop_fitness)
-    #
-    #     if generation is not None:
-    #         if generation % 5 == 0:
-    #             print("Episode", generation, "Population fitness:", pop_fitness)
+    def grade(self, generation=None):
+        """
+        Grade the generation by getting the average fitness of its individuals
+        """
+        # fitness_sum = 0
+        # for x in self.individuals:
+        #     fitness_sum += x.fitness(self.f)
+        # pop_fitness = fitness_sum / self.pop_size
+
+        fitnesses = [individual.fitness(self.f) for individual in self.individuals]
+        mean_fitness = np.mean(fitnesses)
+        self.fitness_history.append(mean_fitness)
+
+        if generation is not None:
+            print("Episode", generation, "Population fitness:", mean_fitness)
+
+    def plot(self, num_generations):
+        x = np.arange(num_generations + 1)
+        y = self.fitness_history
+        plt.plot(x, y)
+        plt.show()
 
     def next_generation(self):
         """
         Crossover the parents to generate children and new generation of individuals
         """
-        def crossover(parent1: str, parent2: str):
+        def crossover(parent1: Individual, parent2: Individual):
             """
             crossover parents to generate child
 
@@ -79,25 +95,25 @@ class Population(object):
             :param parent2: second parent
             :return: child
             """
-            crossover_index = np.random.randint(len(parent1) - 1)
-            child1 = parent1[:crossover_index] + parent2[crossover_index:]
-            child2 = parent2[:crossover_index] + parent1[crossover_index:]
-            child = random.choice([child1, child2])
-            return Individual(self.minvalue, self.maxvalue, child)
+            crossover_index = np.random.randint(len(parent1.chromosome) - 1)
+            child1_chromosome = parent1.chromosome[:crossover_index] + parent2.chromosome[crossover_index:]
+            child2_chromosome = parent2.chromosome[:crossover_index] + parent1.chromosome[crossover_index:]
+            child1_chromosome = random.choice([child1_chromosome, child2_chromosome])
+            return Individual(self.minvalue, self.maxvalue, child1_chromosome)
 
         target_children_size = self.pop_size - len(self.parents)
         children = []
         if len(self.parents) > 0:
             while len(children) < target_children_size:
-                parent1 = (random.choice(self.parents)).chromosome
-                parent2 = (random.choice(self.parents)).chromosome
+                parent1 = (random.choice(self.parents))
+                parent2 = (random.choice(self.parents))
                 if parent1 != parent2:
                     child = crossover(parent1, parent2)
                     children.append(child)
             self.individuals = self.parents + children
 
-    def evolve(self):
+    def evolve(self, generation=None):
         self.select_parents()
         self.next_generation()
-
+        self.grade(generation)
         self.parents = []
