@@ -3,13 +3,12 @@ from codecs import decode
 
 import numpy as np
 
-
 class Individual(object):
 
     def __init__(self,
                  minvalue: float,
                  maxvalue: float,
-                 number: any = None,
+                 number = None,
                  mutate_prob: float = 0.01):
         """
 

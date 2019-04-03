@@ -2,9 +2,9 @@ import function_manipulation
 from Population import Population
 
 if __name__ == '__main__':
-    pop_size = 100
+    pop_size = 200
     mutate_prob = 0.01
-    retain = 0.1
+    retain = 0.2
     random_retain = 0.03
     a = -2
     b = 1

@@ -65,10 +65,6 @@ class Population(object):
         """
         Grade the generation by getting the average fitness of its individuals
         """
-        # fitness_sum = 0
-        # for x in self.individuals:
-        #     fitness_sum += x.fitness(self.f)
-        # pop_fitness = fitness_sum / self.pop_size
 
         fitnesses = [individual.fitness(self.f) for individual in self.individuals]
         mean_fitness = np.mean(fitnesses)
@@ -96,10 +92,11 @@ class Population(object):
             :return: child
             """
             crossover_index = np.random.randint(len(parent1.chromosome) - 1)
-            child1_chromosome = parent1.chromosome[:crossover_index] + parent2.chromosome[crossover_index:]
-            child2_chromosome = parent2.chromosome[:crossover_index] + parent1.chromosome[crossover_index:]
-            child1_chromosome = random.choice([child1_chromosome, child2_chromosome])
-            return Individual(self.minvalue, self.maxvalue, child1_chromosome)
+            # child1_chromosome = parent1.chromosome[:crossover_index] + parent2.chromosome[crossover_index:]
+            # child2_chromosome = parent2.chromosome[:crossover_index] + parent1.chromosome[crossover_index:]
+            # child_chromosome = random.choice([child1_chromosome, child2_chromosome])
+            child_chromosome = (parent1.number + parent2.number) / 2
+            return Individual(self.minvalue, self.maxvalue, child_chromosome)
 
         target_children_size = self.pop_size - len(self.parents)
         children = []
